@@ -5,8 +5,25 @@ import {Promise} from "es6-promise";
 export const GET_DATA: string = "GET_DATA";
 export const SET_ITEM: string = "SET_ITEM";
 
-export function getData(): FluxStandardAction {
+const GET_LIST: string = "GET_LIST";
+const GET_OTHER: string = "GET_OTHER";
+const GET_RANDOM: string = "GET_RANDOM";
+
+export function getData() {
+    return (dispatch) => {
+        return createAction(GET_DATA, Promise.all([
+            dispatch(getList()),
+            getRandom()
+        ]));
+    }
+}
+
+function getList(): FluxStandardAction {
     return createAction(GET_DATA, createNewPromise());
+}
+
+function getRandom(): FluxStandardAction {
+    return createAction(GET_RANDOM, createNewPromise());
 }
 
 export function setItem(itemId: number): FluxStandardAction {
