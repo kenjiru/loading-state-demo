@@ -1,17 +1,18 @@
+import * as _ from "lodash";
 import * as React from "react";
 import { connect } from "react-redux";
 import {FluxStandardAction} from "flux-standard-action";
 
-import {getData, GET_DATA} from "./model/actions";
-import {getLoadingState} from "redux-promise-track";
+import {getData, setItem, GET_DATA, SET_ITEM} from "./model/actions";
+import {getLoadingState, getItemLoadingState} from "redux-promise-track";
 
 class ActiveComponent extends React.Component<IActiveComponentProps, any> {
     componentDidMount() {
-        this.props.dispatch(getData());
+        this.getData();
     }
 
     componentWillReceiveProps(nextProps: IActiveComponentProps) {
-        console.log(nextProps.loadingState);
+        console.log(nextProps.itemsLoadingState);
     }
 
     render() {
@@ -19,7 +20,8 @@ class ActiveComponent extends React.Component<IActiveComponentProps, any> {
             <div className="active-component">
                 <h1>App title</h1>
                 {this.renderLoading()}
-                {this.renderSuccess()}
+                {this.renderError()}
+                {this.renderChildren()}
             </div>
         );
     }
@@ -30,21 +32,86 @@ class ActiveComponent extends React.Component<IActiveComponentProps, any> {
         }
     }
 
-    renderSuccess() {
-        if (this.props.loadingState.isSuccess) {
-            return <div>Success!</div>;
+    renderError() {
+        if (this.props.loadingState.error) {
+            return (
+                <div>
+                    Error loading the list!
+                    <input type="button" onClick={this.getData.bind(this)} value="Retry"/>
+                </div>
+            );
         }
+    }
+
+    renderChildren() {
+        if (this.props.loadingState.isSuccess === false) {
+            return;
+        }
+
+        return _.map(_.range(20), (item) => (
+            <div key={item} className="item">
+                Item {item}
+                {this.renderItemLoading(item)}
+                {this.renderItemSuccess(item)}
+                {this.renderItemFailed(item)}
+                <input type="button" onClick={this.setItem.bind(this, item)} value="Set"/>
+            </div>
+        ));
+    }
+
+    renderItemLoading(itemId: number) {
+        let itemState = this.getItemState(itemId);
+
+        if (itemState.isLoading) {
+            return <span>Loading...</span>;
+        }
+    }
+
+    renderItemSuccess(itemId: number) {
+        let itemState = this.getItemState(itemId);
+
+        if (itemState.isSuccess) {
+            return (
+                <span>Successfully set</span>
+            );
+        }
+    }
+
+    renderItemFailed(itemId: number) {
+        let itemState = this.getItemState(itemId);
+
+        if (itemState.error) {
+            return (
+                <span>
+                    Failed to set item!
+                    <input type="button" onClick={this.setItem.bind(this, itemId)}value="Retry"/>
+                </span>
+            );
+        }
+    }
+
+    getItemState(itemId: number) {
+        return getItemLoadingState(this.props.itemsLoadingState, itemId.toString());
+    }
+
+    getData() {
+        this.props.dispatch(getData());
+    }
+
+    setItem(itemId: number) {
+        this.props.dispatch(setItem(itemId));
     }
 }
 
 interface IActiveComponentProps {
     dispatch: (FluxStandardAction) => void;
     loadingState: any;
+    itemsLoadingState: any;
 }
 
 export default connect((store) => {
     return {
-        loadingState: getLoadingState(store, GET_DATA)
+        loadingState: getLoadingState(store, GET_DATA),
+        itemsLoadingState: getLoadingState(store, SET_ITEM)
     };
 })(ActiveComponent);
-
