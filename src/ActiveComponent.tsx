@@ -12,7 +12,7 @@ class ActiveComponent extends React.Component<IActiveComponentProps, any> {
     }
 
     componentWillReceiveProps(nextProps: IActiveComponentProps) {
-        console.log(nextProps.itemsLoadingState);
+        console.log(nextProps.list);
     }
 
     render() {
@@ -48,7 +48,7 @@ class ActiveComponent extends React.Component<IActiveComponentProps, any> {
             return;
         }
 
-        return _.map(_.range(20), (item) => (
+        return _.map(this.props.list, (item) => (
             <div key={item} className="item">
                 Item {item}
                 {this.renderItemLoading(item)}
@@ -105,6 +105,7 @@ class ActiveComponent extends React.Component<IActiveComponentProps, any> {
 
 interface IActiveComponentProps {
     dispatch: (FluxStandardAction) => void;
+    list: any[];
     loadingState: any;
     itemsLoadingState: any;
 }
@@ -112,6 +113,7 @@ interface IActiveComponentProps {
 export default connect((store) => {
     return {
         loadingState: getLoadingState(store, GET_DATA),
-        itemsLoadingState: getLoadingState(store, SET_ITEM)
+        itemsLoadingState: getLoadingState(store, SET_ITEM),
+        list: store.appData.list
     };
 })(ActiveComponent);
