@@ -3,27 +3,20 @@ import {FluxStandardAction} from "flux-standard-action";
 import {Promise} from "es6-promise";
 
 export const GET_DATA: string = "GET_DATA";
+export const GET_LIST: string = "GET_LIST";
 export const SET_ITEM: string = "SET_ITEM";
-
-const GET_LIST: string = "GET_LIST";
-const GET_OTHER: string = "GET_OTHER";
-const GET_RANDOM: string = "GET_RANDOM";
 
 export function getData() {
     return (dispatch) => {
-        return createAction(GET_DATA, Promise.all([
-            dispatch(getList()),
-            getRandom()
-        ]));
+        return dispatch(createAction(GET_DATA, Promise.all([
+                dispatch(getList())
+            ])
+        ));
     }
 }
 
 function getList(): FluxStandardAction {
-    return createAction(GET_DATA, createNewPromise());
-}
-
-function getRandom(): FluxStandardAction {
-    return createAction(GET_RANDOM, createNewPromise());
+    return createAction(GET_LIST, createNewPromise());
 }
 
 export function setItem(itemId: number): FluxStandardAction {
